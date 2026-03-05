@@ -1,0 +1,100 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
+import { SITE_TITLE } from '../consts';
+---
+
+<!doctype html>
+<html lang="es">
+	<head>
+		<BaseHead title={`Sobre nosotras — ${SITE_TITLE}`} description="Conoce al equipo detrás de Directorio Cejas, tu guía de precios y profesionales de cejas y pestañas en España." />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<Breadcrumb items={[
+				{ label: 'Inicio', href: '/' },
+				{ label: 'Sobre nosotras' },
+			]} />
+
+			<div class="about-content">
+				<h1>Sobre nosotras</h1>
+				<p>
+					Somos un equipo de profesionales apasionadas por el mundo de las cejas y las pestañas.
+					Nuestro objetivo es ofrecer la guía más completa y actualizada sobre tratamientos,
+					precios y profesionales en España.
+				</p>
+				<p>
+					En <strong>Directorio Cejas</strong> encontrarás información verificada sobre
+					microblading, laminado de cejas, extensiones de pestañas, lifting, tinte y mucho más.
+					Todo nuestro contenido está adaptado al mercado español con precios reales y
+					datos de profesionales en cada ciudad.
+				</p>
+				<p>
+					Queremos que tomes las mejores decisiones sobre tus tratamientos de belleza,
+					con información clara, honesta y profesional.
+				</p>
+
+				<div class="about-features">
+					<div class="feature">
+						<h3>Precios reales</h3>
+						<p>Datos actualizados de precios en las principales ciudades españolas.</p>
+					</div>
+					<div class="feature">
+						<h3>Profesionales verificados</h3>
+						<p>Directorio de profesionales cualificados en cada tratamiento y ciudad.</p>
+					</div>
+					<div class="feature">
+						<h3>Guías completas</h3>
+						<p>Información detallada sobre cada tratamiento para que decidas con conocimiento.</p>
+					</div>
+				</div>
+			</div>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	main {
+		max-width: 800px;
+	}
+	.about-content h1 {
+		font-size: 2.5rem;
+		margin-bottom: 1.5rem;
+	}
+	.about-content p {
+		color: var(--text-muted);
+		line-height: 1.8;
+	}
+	.about-content strong {
+		color: var(--text);
+	}
+	.about-features {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1px;
+		border: 1px solid var(--border);
+		margin-top: 2.5rem;
+	}
+	.feature {
+		padding: 1.5rem;
+		background: var(--bg-card);
+	}
+	.feature h3 {
+		font-size: 1rem;
+		margin-bottom: 0.4rem;
+	}
+	.feature p {
+		font-size: 0.85rem;
+		color: var(--text-dim);
+		margin: 0;
+	}
+	@media (max-width: 768px) {
+		.about-features {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

@@ -1,0 +1,137 @@
+---
+import CookieConsent from './CookieConsent.astro';
+import { ciudades } from '../data/ciudades';
+import { tratamientos } from '../data/tratamientos';
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+	<div class="footer-inner">
+		<div class="footer-brand">
+			<a href="/" class="footer-logo">DIRECTORIO <span>CEJAS</span></a>
+			<p>Guía de precios y profesionales de cejas y pestañas en las principales ciudades de España.</p>
+		</div>
+
+		<div class="footer-col">
+			<h4>Ciudades</h4>
+			<ul>
+				{ciudades.slice(0, 6).map((c) => (
+					<li><a href={`/ciudades/${c.slug}/`}>{c.nombre}</a></li>
+				))}
+				<li><a href="/ciudades/">Ver todas</a></li>
+			</ul>
+		</div>
+
+		<div class="footer-col">
+			<h4>Tratamientos</h4>
+			<ul>
+				{tratamientos.map((t) => (
+					<li><a href={`/tratamientos/${t.slug}/`}>{t.nombre}</a></li>
+				))}
+			</ul>
+		</div>
+
+		<div class="footer-col">
+			<h4>Info</h4>
+			<ul>
+				<li><a href="/about">Sobre nosotras</a></li>
+				<li><a href="/blog">Blog</a></li>
+				<li><a href="/rss.xml">RSS</a></li>
+			</ul>
+		</div>
+	</div>
+
+	<div class="footer-bottom">
+		<p>&copy; {year} Directorio Cejas &middot; Todos los derechos reservados</p>
+	</div>
+</footer>
+
+<style>
+	.site-footer {
+		background: var(--bg-card);
+		border-top: 1px solid var(--border);
+		margin-top: auto;
+	}
+	.footer-inner {
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: 3rem 1.5rem 2rem;
+		display: grid;
+		grid-template-columns: 2fr 1fr 1fr 1fr;
+		gap: 3rem;
+	}
+	.footer-logo {
+		display: inline-block;
+		font-size: 0.9rem;
+		font-weight: 700;
+		color: var(--text);
+		text-decoration: none;
+		letter-spacing: 0.1em;
+		margin-bottom: 0.9rem;
+	}
+	.footer-logo span {
+		color: var(--accent);
+	}
+	.footer-brand p {
+		font-size: 0.85rem;
+		line-height: 1.6;
+		color: var(--text-dim);
+		max-width: 280px;
+		margin-bottom: 1.2rem;
+	}
+	.footer-col h4 {
+		font-size: 0.75rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: var(--text-muted);
+		margin-bottom: 1rem;
+	}
+	.footer-col ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+	.footer-col ul a {
+		font-size: 0.85rem;
+		color: var(--text-dim);
+		text-decoration: none;
+		transition: color 0.15s;
+	}
+	.footer-col ul a:hover {
+		color: var(--accent);
+	}
+	.footer-bottom {
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: 1.2rem 1.5rem;
+		border-top: 1px solid var(--border);
+	}
+	.footer-bottom p {
+		font-size: 0.78rem;
+		color: var(--text-dim);
+		margin: 0;
+	}
+	@media (max-width: 900px) {
+		.footer-inner {
+			grid-template-columns: 1fr 1fr;
+			gap: 2rem;
+		}
+		.footer-brand {
+			grid-column: 1 / -1;
+		}
+		.footer-brand p {
+			max-width: 100%;
+		}
+	}
+	@media (max-width: 540px) {
+		.footer-inner {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>
+
+<CookieConsent />

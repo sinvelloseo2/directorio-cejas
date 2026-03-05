@@ -1,0 +1,113 @@
+---
+import { getCollection } from 'astro:content';
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import FormattedDate from '../../components/FormattedDate.astro';
+import Header from '../../components/Header.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import { SITE_TITLE } from '../../consts';
+
+const posts = (await getCollection('blog')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+---
+
+<!doctype html>
+<html lang="es">
+	<head>
+		<BaseHead title={`Blog — ${SITE_TITLE}`} description="Artículos y guías sobre cejas y pestañas: microblading, laminado, extensiones, lifting y tendencias en España." />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<Breadcrumb items={[
+				{ label: 'Inicio', href: '/' },
+				{ label: 'Blog' },
+			]} />
+
+			<div class="page-header">
+				<h1>Blog</h1>
+				<p>Guías, consejos y tendencias sobre cejas y pestañas</p>
+			</div>
+
+			<div class="posts-list">
+				{posts.map((post) => (
+					<a href={`/blog/${post.id}/`} class="post-row">
+						<div class="post-info">
+							<h2>{post.data.title}</h2>
+							{post.data.description && <p>{post.data.description}</p>}
+						</div>
+						<span class="post-date"><FormattedDate date={post.data.pubDate} /></span>
+					</a>
+				))}
+			</div>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	main {
+		max-width: 900px;
+	}
+	.page-header {
+		margin-bottom: 2rem;
+	}
+	.page-header h1 {
+		margin-bottom: 0.3rem;
+	}
+	.page-header p {
+		color: var(--text-muted);
+		font-size: 1.05rem;
+		margin: 0;
+	}
+	.posts-list {
+		border-top: 1px solid var(--border);
+	}
+	.post-row {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 2rem;
+		padding: 1.3rem 0;
+		border-bottom: 1px solid var(--border);
+		text-decoration: none;
+		color: var(--text);
+		transition: background 0.1s;
+	}
+	.post-row:hover {
+		text-decoration: none;
+	}
+	.post-row:hover h2 {
+		color: var(--accent);
+	}
+	.post-info {
+		flex: 1;
+	}
+	.post-info h2 {
+		font-size: 1.15rem;
+		margin: 0 0 0.2rem;
+		transition: color 0.15s;
+	}
+	.post-info p {
+		font-size: 0.85rem;
+		color: var(--text-dim);
+		margin: 0;
+		display: -webkit-box;
+		-webkit-line-clamp: 1;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+	.post-date {
+		font-size: 0.78rem;
+		color: var(--text-dim);
+		white-space: nowrap;
+		flex-shrink: 0;
+	}
+	@media (max-width: 640px) {
+		.post-row {
+			flex-direction: column;
+			gap: 0.3rem;
+		}
+	}
+</style>

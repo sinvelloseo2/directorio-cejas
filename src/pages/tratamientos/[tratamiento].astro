@@ -1,0 +1,220 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import ComparisonTable from '../../components/ComparisonTable.astro';
+import FAQ from '../../components/FAQ.astro';
+import { tratamientos, type Tratamiento } from '../../data/tratamientos';
+import { SITE_TITLE, SITE_URL } from '../../consts';
+
+export function getStaticPaths() {
+	return tratamientos.map((t) => ({
+		params: { tratamiento: t.slug },
+		props: { tratamiento: t },
+	}));
+}
+
+interface Props {
+	tratamiento: Tratamiento;
+}
+
+const { tratamiento } = Astro.props;
+
+const title = `${tratamiento.nombre} en España — Precios y guía completa | ${SITE_TITLE}`;
+const description = `Todo sobre ${tratamiento.nombre.toLowerCase()} en España: ${tratamiento.descripcionCorta.toLowerCase()}. Precios desde ${tratamiento.precioMedioMin}€, duración ${tratamiento.duracion}.`;
+
+const serviceSchema = {
+	"@context": "https://schema.org",
+	"@type": "Service",
+	"name": tratamiento.nombre,
+	"description": tratamiento.descripcion,
+	"areaServed": {
+		"@type": "Country",
+		"name": "España",
+	},
+	"offers": {
+		"@type": "AggregateOffer",
+		"lowPrice": tratamiento.precioMedioMin,
+		"highPrice": tratamiento.precioMedioMax,
+		"priceCurrency": "EUR",
+	},
+};
+---
+
+<!doctype html>
+<html lang="es">
+	<head>
+		<BaseHead title={title} description={description} />
+		<script type="application/ld+json" set:html={JSON.stringify(serviceSchema)} />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<Breadcrumb items={[
+				{ label: 'Inicio', href: '/' },
+				{ label: 'Tratamientos', href: '/tratamientos/' },
+				{ label: tratamiento.nombre },
+			]} />
+
+			<div class="treatment-hero">
+				<h1>{tratamiento.nombre}</h1>
+				<p class="treatment-desc">{tratamiento.descripcion}</p>
+
+				<div class="info-grid">
+					<div class="info-item">
+						<span class="info-label">Duración resultado</span>
+						<span class="info-value">{tratamiento.duracion}</span>
+					</div>
+					<div class="info-item">
+						<span class="info-label">Tiempo sesión</span>
+						<span class="info-value">{tratamiento.tiempoSesion}</span>
+					</div>
+					<div class="info-item">
+						<span class="info-label">Nivel dolor</span>
+						<span class="info-value">{tratamiento.nivelDolor}</span>
+					</div>
+					<div class="info-item accent">
+						<span class="info-label">Precio medio España</span>
+						<span class="info-value">{tratamiento.precioMedioMin}€ – {tratamiento.precioMedioMax}€</span>
+					</div>
+				</div>
+			</div>
+
+			<section class="comparison-section">
+				<h2>Precios por ciudad</h2>
+				<p class="section-subtitle">Comparativa de precios de {tratamiento.nombre.toLowerCase()} en las principales ciudades españolas</p>
+				<ComparisonTable tratamientoSlug={tratamiento.slug} />
+			</section>
+
+			<section class="faq-section">
+				<h2>Preguntas frecuentes</h2>
+				<FAQ items={tratamiento.faq} />
+			</section>
+
+			<section class="other-treatments">
+				<h2>Otros tratamientos</h2>
+				<div class="treatments-links">
+					{tratamientos.filter((t) => t.slug !== tratamiento.slug).map((t) => (
+						<a href={`/tratamientos/${t.slug}/`}>{t.nombre}</a>
+					))}
+				</div>
+			</section>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	main {
+		max-width: 1000px;
+	}
+	.treatment-hero {
+		margin-bottom: 3rem;
+		padding-bottom: 2rem;
+		border-bottom: 1px solid var(--border);
+	}
+	.treatment-hero h1 {
+		font-size: 2.8rem;
+		margin-bottom: 0.75rem;
+	}
+	.treatment-desc {
+		color: var(--text-muted);
+		font-size: 1rem;
+		max-width: 700px;
+		margin-bottom: 2rem;
+		line-height: 1.7;
+	}
+	.info-grid {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		border: 1px solid var(--border);
+	}
+	.info-item {
+		padding: 1.2rem 1rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.3rem;
+		border-right: 1px solid var(--border);
+	}
+	.info-item:last-child {
+		border-right: none;
+	}
+	.info-item.accent {
+		background: var(--accent-dim);
+	}
+	.info-label {
+		font-size: 0.68rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--text-dim);
+		font-weight: 600;
+	}
+	.info-value {
+		font-size: 0.95rem;
+		font-weight: 700;
+		color: var(--text);
+	}
+	.info-item.accent .info-value {
+		color: var(--accent);
+	}
+	.comparison-section {
+		margin-bottom: 3rem;
+	}
+	.comparison-section h2 {
+		font-size: 1.6rem;
+		margin-bottom: 0.3rem;
+	}
+	.section-subtitle {
+		color: var(--text-muted);
+		font-size: 0.92rem;
+		margin-bottom: 1.5rem;
+	}
+	.faq-section {
+		margin-bottom: 3rem;
+	}
+	.faq-section h2 {
+		font-size: 1.6rem;
+		margin-bottom: 1rem;
+	}
+	.other-treatments {
+		margin-bottom: 2rem;
+	}
+	.other-treatments h2 {
+		font-size: 1.3rem;
+		margin-bottom: 1rem;
+	}
+	.treatments-links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+	.treatments-links a {
+		padding: 0.5rem 1rem;
+		border: 1px solid var(--border);
+		color: var(--text-muted);
+		text-decoration: none;
+		font-size: 0.85rem;
+		font-weight: 600;
+		transition: border-color 0.15s, color 0.15s;
+	}
+	.treatments-links a:hover {
+		border-color: var(--accent);
+		color: var(--accent);
+	}
+	@media (max-width: 768px) {
+		.treatment-hero h1 {
+			font-size: 2rem;
+		}
+		.info-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+		.info-item:nth-child(2) {
+			border-right: none;
+		}
+		.info-item:nth-child(1),
+		.info-item:nth-child(2) {
+			border-bottom: 1px solid var(--border);
+		}
+	}
+</style>

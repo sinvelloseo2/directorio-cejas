@@ -1,0 +1,508 @@
+---
+import BaseHead from '../../../components/BaseHead.astro';
+import Header from '../../../components/Header.astro';
+import Footer from '../../../components/Footer.astro';
+import Breadcrumb from '../../../components/Breadcrumb.astro';
+import { getProvincias, getProvincia, getSubcities, getSubcityNegocios, getNegocio, slugify, renderEstrellas, type Negocio } from '../../../data/directorio';
+import { SITE_TITLE, SITE_URL } from '../../../consts';
+
+export function getStaticPaths() {
+	const paths: any[] = [];
+
+	for (const [provSlug, prov] of getProvincias()) {
+		// Capital business detail pages
+		for (const n of prov.capital_negocios) {
+			const nSlug = slugify(n.nombre);
+			if (!nSlug) continue;
+			paths.push({
+				params: { provincia: provSlug, slug: nSlug },
+				props: { type: 'negocio', provSlug, provincia: prov, negocio: n },
+			});
+		}
+
+		// Subcity listing pages
+		for (const [citySlug, sc] of Object.entries(prov.subcities)) {
+			if (!citySlug) continue;
+			paths.push({
+				params: { provincia: provSlug, slug: citySlug },
+				props: { type: 'subcity', provSlug, provincia: prov, citySlug, subcity: sc },
+			});
+		}
+	}
+
+	return paths;
+}
+
+const { type, provSlug, provincia, negocio, citySlug, subcity } = Astro.props;
+const isNegocio = type === 'negocio';
+
+// Page metadata
+const title = isNegocio
+	? `${negocio.nombre} — ${negocio.ciudad} | ${SITE_TITLE}`
+	: `Cejas y pestañas en ${subcity.nombre} (${provincia.nombre}) | ${SITE_TITLE}`;
+const description = isNegocio
+	? `${negocio.nombre} en ${negocio.ciudad}: ${negocio.categoria}. ${negocio.rating ? `Valoración: ${negocio.rating}/5 (${negocio.num_resenas} reseñas).` : ''} ${negocio.direccion}.`
+	: `${subcity.negocios.length} profesionales de cejas y pestañas en ${subcity.nombre}, ${provincia.nombre}.`;
+
+const DIAS = { monday: 'Lunes', tuesday: 'Martes', wednesday: 'Miércoles', thursday: 'Jueves', friday: 'Viernes', saturday: 'Sábado', sunday: 'Domingo' };
+---
+
+<!doctype html>
+<html lang="es">
+	<head>
+		<BaseHead title={title} description={description} />
+	</head>
+	<body>
+		<Header />
+		<main>
+			{isNegocio ? (
+				<!-- Business detail -->
+				<>
+					<Breadcrumb items={[
+						{ label: 'Inicio', href: '/' },
+						{ label: 'Directorio', href: '/directorio/' },
+						{ label: provincia.nombre, href: `/directorio/${provSlug}/` },
+						{ label: negocio.nombre },
+					]} />
+
+					<div class="detail-layout">
+						<div class="detail-main">
+							<div class="detail-header">
+								<div class="detail-badges">
+									<span class="cat-badge">{negocio.categoria}</span>
+									{negocio.verificado && <span class="verified-badge">✓ Verificado</span>}
+								</div>
+								<h1>{negocio.nombre}</h1>
+								<p class="detail-addr">{negocio.direccion}, {negocio.ciudad}, {negocio.region}</p>
+								{negocio.rating && (
+									<div class="detail-rating">
+										<span class="rating-big">{negocio.rating}</span>
+										<span class="rating-stars">{renderEstrellas(negocio.rating)}</span>
+										<span class="rating-count">{negocio.num_resenas} reseñas</span>
+									</div>
+								)}
+								{negocio.rating && Object.keys(negocio.rating_distribucion).length > 0 && (
+									<div class="rating-bars">
+										{[5,4,3,2,1].map(star => {
+											const count = negocio.rating_distribucion[String(star)] || 0;
+											const pct = negocio.num_resenas > 0 ? (count / negocio.num_resenas) * 100 : 0;
+											return (
+												<div class="bar-row">
+													<span class="bar-label">{star}★</span>
+													<div class="bar-track"><div class="bar-fill" style={`width:${pct}%`}></div></div>
+													<span class="bar-count">{count}</span>
+												</div>
+											);
+										})}
+									</div>
+								)}
+							</div>
+
+							{negocio.descripcion && (
+								<section class="detail-section">
+									<h2>Sobre el centro</h2>
+									<p class="detail-desc">{negocio.descripcion}</p>
+								</section>
+							)}
+
+							<section class="detail-section">
+								<h2>Información de contacto</h2>
+								<div class="contact-grid">
+									<div class="contact-item">
+										<span class="contact-label">Dirección</span>
+										<span>{negocio.direccion}, {negocio.codigo_postal} {negocio.ciudad}</span>
+									</div>
+									{negocio.barrio && (
+										<div class="contact-item">
+											<span class="contact-label">Barrio</span>
+											<span>{negocio.barrio}</span>
+										</div>
+									)}
+									{negocio.telefono && (
+										<div class="contact-item">
+											<span class="contact-label">Teléfono</span>
+											<a href={`tel:${negocio.telefono}`}>{negocio.telefono}</a>
+										</div>
+									)}
+									{negocio.web && negocio.dominio !== 'instagram.com' && negocio.dominio !== 'www.instagram.com' && (
+										<div class="contact-item">
+											<span class="contact-label">Web</span>
+											<a href={negocio.web} target="_blank" rel="nofollow noopener">{negocio.dominio}</a>
+										</div>
+									)}
+								</div>
+							</section>
+
+							{Object.keys(negocio.horarios).length > 0 && (
+								<section class="detail-section">
+									<h2>Horario</h2>
+									<div class="schedule">
+										{Object.entries(DIAS).map(([key, label]) => {
+											const slots = negocio.horarios[key];
+											return (
+												<div class="schedule-row">
+													<span class="day">{label}</span>
+													<span class="hours">
+														{slots ? slots.map((s: any) => {
+															const openH = String(s.open?.hour || 0).padStart(2, '0');
+															const openM = String(s.open?.minute || 0).padStart(2, '0');
+															const closeH = String(s.close?.hour || 0).padStart(2, '0');
+															const closeM = String(s.close?.minute || 0).padStart(2, '0');
+															return `${openH}:${openM}–${closeH}:${closeM}`;
+														}).join(', ') : 'Cerrado'}
+													</span>
+												</div>
+											);
+										})}
+									</div>
+								</section>
+							)}
+
+							{Object.keys(negocio.atributos).length > 0 && (
+								<section class="detail-section">
+									<h2>Servicios y características</h2>
+									<div class="attr-tags">
+										{Object.entries(negocio.atributos).flatMap(([, attrs]) =>
+											(attrs as string[]).map(a => a.replace(/^(has_|is_|pay_|offers_|requires_|recommends_|welcomes_)/, '').replace(/_/g, ' '))
+										).map(tag => (
+											<span class="attr-tag">{tag}</span>
+										))}
+									</div>
+								</section>
+							)}
+						</div>
+
+						<aside class="detail-sidebar">
+							<div class="sidebar-card">
+								<h4>Contacto</h4>
+								<div class="sidebar-actions">
+									{negocio.telefono && (
+										<a href={`tel:${negocio.telefono}`} class="action-btn primary">Llamar</a>
+									)}
+									{negocio.google_maps_url && (
+										<a href={negocio.google_maps_url} target="_blank" rel="nofollow noopener" class="action-btn">Google Maps</a>
+									)}
+									{negocio.web && (
+										<a href={negocio.web} target="_blank" rel="nofollow noopener" class="action-btn">Sitio web</a>
+									)}
+								</div>
+							</div>
+						</aside>
+					</div>
+				</>
+			) : (
+				<!-- Subcity listing -->
+				<>
+					<Breadcrumb items={[
+						{ label: 'Inicio', href: '/' },
+						{ label: 'Directorio', href: '/directorio/' },
+						{ label: provincia.nombre, href: `/directorio/${provSlug}/` },
+						{ label: subcity.nombre },
+					]} />
+
+					<div class="page-header">
+						<span class="tag">{subcity.negocios.length} centros</span>
+						<h1>Cejas y pestañas en {subcity.nombre}</h1>
+						<p>{provincia.nombre}</p>
+					</div>
+
+					<div class="listings">
+						{subcity.negocios.map((n: Negocio) => (
+							<a href={`/directorio/${provSlug}/${citySlug}/${slugify(n.nombre)}/`} class="listing-card">
+								<div class="listing-content">
+									<div class="listing-badges">
+										<span class="cat-badge">{n.categoria}</span>
+										{n.verificado && <span class="verified-badge">✓</span>}
+									</div>
+									<h3>{n.nombre}</h3>
+									<p class="listing-addr">{n.direccion}, {n.ciudad}</p>
+								</div>
+								<div class="listing-rating-col">
+									{n.rating && (
+										<>
+											<span class="rating-num">{n.rating}</span>
+											<span class="rating-stars">{renderEstrellas(n.rating)}</span>
+											<span class="rating-count">{n.num_resenas}</span>
+										</>
+									)}
+								</div>
+							</a>
+						))}
+					</div>
+				</>
+			)}
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	main {
+		max-width: 1200px;
+	}
+	.page-header {
+		margin-bottom: 2rem;
+	}
+	.tag {
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: var(--accent);
+		font-weight: 600;
+	}
+	.page-header h1 {
+		margin: 0.4rem 0 0.2rem;
+	}
+	.page-header p {
+		color: var(--text-muted);
+		margin: 0;
+	}
+
+	/* Listings (subcity) */
+	.listings {
+		display: flex;
+		flex-direction: column;
+		border: 1px solid var(--border);
+	}
+	.listing-card {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 1.2rem 1.5rem;
+		text-decoration: none;
+		color: var(--text);
+		border-bottom: 1px solid var(--border);
+		gap: 1.5rem;
+		transition: background 0.1s;
+	}
+	.listing-card:last-child { border-bottom: none; }
+	.listing-card:hover { background: var(--bg-card); }
+	.listing-content { flex: 1; }
+	.listing-badges { display: flex; gap: 0.5rem; margin-bottom: 0.3rem; }
+	.cat-badge {
+		font-size: 0.65rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--accent);
+		border: 1px solid var(--accent);
+		padding: 0.15rem 0.5rem;
+		font-weight: 600;
+	}
+	.verified-badge {
+		font-size: 0.65rem;
+		color: #2d8a4e;
+		border: 1px solid #2d8a4e;
+		padding: 0.15rem 0.4rem;
+		font-weight: 700;
+	}
+	.listing-content h3 { font-size: 1.05rem; margin: 0 0 0.2rem; }
+	.listing-addr { font-size: 0.82rem; color: var(--text-dim); margin: 0; }
+	.listing-rating-col {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		flex-shrink: 0;
+	}
+	.rating-num { font-size: 1.6rem; font-weight: 700; color: var(--accent); }
+	.rating-stars { font-size: 0.75rem; color: #f5a623; }
+	.rating-count { font-size: 0.68rem; color: var(--text-dim); }
+
+	/* Detail layout */
+	.detail-layout {
+		display: grid;
+		grid-template-columns: 1fr 300px;
+		gap: 3rem;
+	}
+	.detail-header {
+		margin-bottom: 2rem;
+		padding-bottom: 2rem;
+		border-bottom: 1px solid var(--border);
+	}
+	.detail-badges {
+		display: flex;
+		gap: 0.5rem;
+		margin-bottom: 0.5rem;
+	}
+	.detail-header h1 {
+		font-size: 2rem;
+		margin: 0 0 0.3rem;
+	}
+	.detail-addr {
+		color: var(--text-muted);
+		font-size: 0.92rem;
+		margin: 0 0 1rem;
+	}
+	.detail-rating {
+		display: flex;
+		align-items: baseline;
+		gap: 0.5rem;
+		margin-bottom: 0.75rem;
+	}
+	.rating-big {
+		font-size: 2.2rem;
+		font-weight: 700;
+		color: var(--accent);
+	}
+	.rating-bars {
+		max-width: 300px;
+	}
+	.bar-row {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-bottom: 0.2rem;
+	}
+	.bar-label {
+		font-size: 0.72rem;
+		color: var(--text-dim);
+		width: 2rem;
+		text-align: right;
+	}
+	.bar-track {
+		flex: 1;
+		height: 6px;
+		background: var(--border);
+	}
+	.bar-fill {
+		height: 100%;
+		background: var(--accent);
+	}
+	.bar-count {
+		font-size: 0.72rem;
+		color: var(--text-dim);
+		width: 2rem;
+	}
+
+	/* Detail sections */
+	.detail-section {
+		margin-bottom: 2rem;
+		padding-bottom: 1.5rem;
+		border-bottom: 1px solid var(--border);
+	}
+	.detail-section h2 {
+		font-size: 1.2rem;
+		margin-bottom: 0.75rem;
+	}
+	.detail-desc {
+		color: var(--text-muted);
+		font-size: 0.92rem;
+		line-height: 1.7;
+		white-space: pre-line;
+	}
+	.contact-grid {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+	.contact-item {
+		display: flex;
+		gap: 1rem;
+		font-size: 0.9rem;
+	}
+	.contact-label {
+		color: var(--text-dim);
+		min-width: 80px;
+		font-size: 0.78rem;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		padding-top: 0.1rem;
+	}
+	.contact-item a {
+		color: var(--accent);
+	}
+
+	/* Schedule */
+	.schedule {
+		display: flex;
+		flex-direction: column;
+		gap: 0.3rem;
+	}
+	.schedule-row {
+		display: flex;
+		gap: 1rem;
+		font-size: 0.88rem;
+	}
+	.day {
+		min-width: 90px;
+		color: var(--text-muted);
+	}
+	.hours {
+		color: var(--text);
+	}
+
+	/* Attributes */
+	.attr-tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+	}
+	.attr-tag {
+		font-size: 0.75rem;
+		padding: 0.3rem 0.7rem;
+		border: 1px solid var(--border);
+		color: var(--text-muted);
+		text-transform: capitalize;
+	}
+
+	/* Sidebar */
+	.detail-sidebar {
+		position: sticky;
+		top: 80px;
+		align-self: start;
+	}
+	.sidebar-card {
+		border: 1px solid var(--border);
+		padding: 1.2rem;
+	}
+	.sidebar-card h4 {
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--text-muted);
+		margin-bottom: 0.75rem;
+	}
+	.sidebar-actions {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+	.action-btn {
+		display: block;
+		text-align: center;
+		padding: 0.6rem;
+		font-size: 0.82rem;
+		font-weight: 700;
+		text-decoration: none;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		border: 1px solid var(--border);
+		color: var(--text-muted);
+		transition: all 0.15s;
+	}
+	.action-btn:hover {
+		border-color: var(--accent);
+		color: var(--accent);
+	}
+	.action-btn.primary {
+		background: var(--accent);
+		color: var(--bg);
+		border-color: var(--accent);
+	}
+	.action-btn.primary:hover {
+		background: #fff;
+		color: var(--bg);
+	}
+
+	@media (max-width: 900px) {
+		.detail-layout {
+			grid-template-columns: 1fr;
+		}
+		.detail-sidebar {
+			position: static;
+		}
+		.listing-card {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+	}
+</style>

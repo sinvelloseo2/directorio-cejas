@@ -1,0 +1,77 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import TreatmentCard from '../../components/TreatmentCard.astro';
+import { tratamientos } from '../../data/tratamientos';
+import { SITE_TITLE, SITE_URL } from '../../consts';
+
+const title = `Tratamientos — ${SITE_TITLE}`;
+const description = 'Guía completa de tratamientos de cejas y pestañas en España: microblading, laminado, extensiones, lifting, micropigmentación y tinte.';
+
+const itemListSchema = {
+	"@context": "https://schema.org",
+	"@type": "ItemList",
+	"name": "Tratamientos de cejas y pestañas en España",
+	"numberOfItems": tratamientos.length,
+	"itemListElement": tratamientos.map((t, i) => ({
+		"@type": "ListItem",
+		"position": i + 1,
+		"name": t.nombre,
+		"url": `${SITE_URL}/tratamientos/${t.slug}/`,
+	})),
+};
+---
+
+<!doctype html>
+<html lang="es">
+	<head>
+		<BaseHead title={title} description={description} />
+		<script type="application/ld+json" set:html={JSON.stringify(itemListSchema)} />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<Breadcrumb items={[
+				{ label: 'Inicio', href: '/' },
+				{ label: 'Tratamientos' },
+			]} />
+
+			<div class="page-header">
+				<h1>Tratamientos</h1>
+				<p>Cejas y pestañas: {tratamientos.length} tratamientos con precios y detalles</p>
+			</div>
+
+			<div class="treatments-list">
+				{tratamientos.map((t) => (
+					<TreatmentCard tratamiento={t} />
+				))}
+			</div>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	main {
+		max-width: 1000px;
+	}
+	.page-header {
+		margin-bottom: 2.5rem;
+	}
+	.page-header h1 {
+		margin-bottom: 0.3rem;
+	}
+	.page-header p {
+		color: var(--text-muted);
+		font-size: 1.05rem;
+		margin: 0;
+	}
+	.treatments-list {
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
+		border: 1px solid var(--border);
+	}
+</style>

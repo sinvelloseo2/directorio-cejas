@@ -1,0 +1,102 @@
+---
+import type { Tratamiento } from '../data/tratamientos';
+
+interface Props {
+	tratamiento: Tratamiento;
+}
+
+const { tratamiento } = Astro.props;
+---
+
+<a href={`/tratamientos/${tratamiento.slug}/`} class="treatment-card">
+	<div class="treatment-info">
+		<h3>{tratamiento.nombre}</h3>
+		<p>{tratamiento.descripcionCorta}</p>
+	</div>
+	<div class="treatment-meta">
+		<div class="meta-pill">
+			<span class="meta-label">Duración</span>
+			<span class="meta-value">{tratamiento.duracion}</span>
+		</div>
+		<div class="meta-pill">
+			<span class="meta-label">Sesión</span>
+			<span class="meta-value">{tratamiento.tiempoSesion}</span>
+		</div>
+		<div class="meta-pill price">
+			<span class="meta-label">Precio</span>
+			<span class="meta-value">{tratamiento.precioMedioMin}€–{tratamiento.precioMedioMax}€</span>
+		</div>
+	</div>
+</a>
+
+<style>
+	.treatment-card {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 2rem;
+		background: var(--bg-card);
+		border: 1px solid var(--border);
+		padding: 1.5rem 1.8rem;
+		text-decoration: none;
+		color: var(--text);
+		transition: border-color 0.15s, background 0.15s;
+	}
+	.treatment-card:hover {
+		border-color: var(--accent);
+		background: var(--bg-card-hover);
+		text-decoration: none;
+	}
+	.treatment-info {
+		flex: 1;
+	}
+	.treatment-info h3 {
+		font-size: 1.15rem;
+		margin: 0 0 0.3rem;
+	}
+	.treatment-info p {
+		font-size: 0.88rem;
+		color: var(--text-muted);
+		margin: 0;
+	}
+	.treatment-meta {
+		display: flex;
+		gap: 1rem;
+		flex-shrink: 0;
+	}
+	.meta-pill {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding: 0.5rem 0.9rem;
+		border: 1px solid var(--border);
+		min-width: 80px;
+	}
+	.meta-pill.price {
+		border-color: var(--accent);
+	}
+	.meta-label {
+		font-size: 0.65rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--text-dim);
+	}
+	.meta-value {
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: var(--text);
+	}
+	.meta-pill.price .meta-value {
+		color: var(--accent);
+	}
+	@media (max-width: 768px) {
+		.treatment-card {
+			flex-direction: column;
+			align-items: stretch;
+			gap: 1rem;
+		}
+		.treatment-meta {
+			flex-wrap: wrap;
+		}
+	}
+</style>

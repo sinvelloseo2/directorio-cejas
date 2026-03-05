@@ -1,0 +1,141 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import { getProvincias, getTotalNegocios, getProvinciasCount } from '../../data/directorio';
+import { SITE_TITLE, SITE_URL } from '../../consts';
+
+const provincias = getProvincias();
+const total = getTotalNegocios();
+const provCount = getProvinciasCount();
+
+const title = `Directorio de profesionales — ${SITE_TITLE}`;
+const description = `Directorio con ${total} profesionales de cejas y pestañas en ${provCount} provincias de España. Encuentra tu centro más cercano.`;
+
+const itemListSchema = {
+	"@context": "https://schema.org",
+	"@type": "ItemList",
+	"name": "Provincias con profesionales de cejas y pestañas",
+	"numberOfItems": provCount,
+	"itemListElement": provincias.map(([slug, prov], i) => ({
+		"@type": "ListItem",
+		"position": i + 1,
+		"name": prov.nombre,
+		"url": `${SITE_URL}/directorio/${slug}/`,
+	})),
+};
+---
+
+<!doctype html>
+<html lang="es">
+	<head>
+		<BaseHead title={title} description={description} />
+		<script type="application/ld+json" set:html={JSON.stringify(itemListSchema)} />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<Breadcrumb items={[
+				{ label: 'Inicio', href: '/' },
+				{ label: 'Directorio' },
+			]} />
+
+			<div class="page-header">
+				<span class="tag">{total} profesionales</span>
+				<h1>Directorio por provincias</h1>
+				<p>Centros de cejas y pestañas verificados en {provCount} provincias españolas</p>
+			</div>
+
+			<div class="prov-grid">
+				{provincias.map(([slug, prov]) => (
+					<a href={`/directorio/${slug}/`} class="prov-card">
+						<div class="prov-info">
+							<h2>{prov.nombre}</h2>
+							<span class="prov-capital">Capital: {prov.capital}</span>
+						</div>
+						<div class="prov-count">
+							<span class="count-num">{prov.total}</span>
+							<span class="count-label">centros</span>
+						</div>
+					</a>
+				))}
+			</div>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	main {
+		max-width: 1200px;
+	}
+	.page-header {
+		margin-bottom: 2.5rem;
+	}
+	.tag {
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: var(--accent);
+		font-weight: 600;
+	}
+	.page-header h1 {
+		margin: 0.4rem 0 0.3rem;
+	}
+	.page-header p {
+		color: var(--text-muted);
+		font-size: 1.05rem;
+		margin: 0;
+	}
+	.prov-grid {
+		display: flex;
+		flex-direction: column;
+		border: 1px solid var(--border);
+	}
+	.prov-card {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 1.2rem 1.5rem;
+		text-decoration: none;
+		color: var(--text);
+		border-bottom: 1px solid var(--border);
+		transition: background 0.1s;
+	}
+	.prov-card:last-child {
+		border-bottom: none;
+	}
+	.prov-card:hover {
+		background: var(--bg-card);
+		text-decoration: none;
+	}
+	.prov-info h2 {
+		font-size: 1.15rem;
+		margin: 0 0 0.15rem;
+	}
+	.prov-card:hover .prov-info h2 {
+		color: var(--accent);
+	}
+	.prov-capital {
+		font-size: 0.8rem;
+		color: var(--text-dim);
+	}
+	.prov-count {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		flex-shrink: 0;
+	}
+	.count-num {
+		font-size: 1.4rem;
+		font-weight: 700;
+		color: var(--accent);
+	}
+	.count-label {
+		font-size: 0.68rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--text-dim);
+	}
+</style>

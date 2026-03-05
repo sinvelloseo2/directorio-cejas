@@ -1,0 +1,112 @@
+---
+import HeaderLink from './HeaderLink.astro';
+---
+
+<header>
+	<nav>
+		<a href="/" class="site-logo">
+			<span class="logo-text">DIRECTORIO</span>
+			<span class="logo-accent">CEJAS</span>
+		</a>
+		<button class="menu-toggle" id="menuToggle" aria-label="Abrir menú" aria-expanded="false">
+			<span></span><span></span><span></span>
+		</button>
+		<div class="nav-links" id="navLinks">
+			<HeaderLink href="/directorio">Directorio</HeaderLink>
+			<HeaderLink href="/ciudades">Ciudades</HeaderLink>
+			<HeaderLink href="/tratamientos">Tratamientos</HeaderLink>
+			<HeaderLink href="/blog">Blog</HeaderLink>
+			<HeaderLink href="/about">Sobre nosotras</HeaderLink>
+		</div>
+	</nav>
+</header>
+
+<script>
+	const toggle = document.getElementById('menuToggle');
+	const nav = document.getElementById('navLinks');
+	toggle?.addEventListener('click', () => {
+		const open = nav?.classList.toggle('open');
+		toggle.setAttribute('aria-expanded', String(open));
+	});
+</script>
+
+<style>
+	header {
+		position: sticky;
+		top: 0;
+		z-index: 100;
+		background: rgba(10, 10, 10, 0.95);
+		backdrop-filter: blur(8px);
+		border-bottom: 1px solid var(--border);
+	}
+	nav {
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: 0 1.5rem;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		height: 64px;
+	}
+	.site-logo {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		text-decoration: none;
+	}
+	.logo-text {
+		font-weight: 700;
+		font-size: 0.95rem;
+		letter-spacing: 0.12em;
+		color: var(--text);
+	}
+	.logo-accent {
+		font-weight: 700;
+		font-size: 0.95rem;
+		letter-spacing: 0.12em;
+		color: var(--accent);
+	}
+	.nav-links {
+		display: flex;
+		align-items: center;
+		gap: 0.15rem;
+	}
+	.menu-toggle {
+		display: none;
+		flex-direction: column;
+		justify-content: center;
+		gap: 5px;
+		background: none;
+		border: none;
+		cursor: pointer;
+		padding: 0.4rem;
+	}
+	.menu-toggle span {
+		display: block;
+		width: 22px;
+		height: 2px;
+		background: var(--text);
+		transition: all 0.2s;
+	}
+	@media (max-width: 768px) {
+		.menu-toggle {
+			display: flex;
+		}
+		.nav-links {
+			display: none;
+			position: absolute;
+			top: 64px;
+			left: 0;
+			right: 0;
+			background: var(--bg);
+			flex-direction: column;
+			align-items: stretch;
+			padding: 0.5rem 1rem 1rem;
+			border-bottom: 1px solid var(--border);
+			gap: 0;
+		}
+		.nav-links.open {
+			display: flex;
+		}
+	}
+</style>

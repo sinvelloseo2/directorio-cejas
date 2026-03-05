@@ -1,0 +1,328 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import { getProvincias, getProvincia, getSubcities, slugify, renderEstrellas, type ProvinciaData, type Negocio } from '../../data/directorio';
+import { SITE_TITLE, SITE_URL } from '../../consts';
+
+export function getStaticPaths() {
+	return getProvincias().map(([slug, prov]) => ({
+		params: { provincia: slug },
+		props: { provincia: prov, slug },
+	}));
+}
+
+interface Props {
+	provincia: ProvinciaData;
+	slug: string;
+}
+
+const { provincia, slug } = Astro.props;
+
+const subcities = getSubcities(slug);
+const otherProvincias = getProvincias().filter(([s]) => s !== slug).slice(0, 10);
+
+const title = `Cejas y pestañas en ${provincia.nombre} — ${provincia.total} centros | ${SITE_TITLE}`;
+const description = `Directorio de ${provincia.total} profesionales de cejas y pestañas en ${provincia.nombre}. ${provincia.capital_negocios.length} centros en ${provincia.capital}.`;
+
+const itemListSchema = {
+	"@context": "https://schema.org",
+	"@type": "ItemList",
+	"name": `Profesionales de cejas y pestañas en ${provincia.nombre}`,
+	"numberOfItems": Math.min(provincia.capital_negocios.length, 20),
+	"itemListElement": provincia.capital_negocios.slice(0, 20).map((n: Negocio, i: number) => ({
+		"@type": "ListItem",
+		"position": i + 1,
+		"name": n.nombre,
+		"url": `${SITE_URL}/directorio/${slug}/${slugify(n.nombre)}/`,
+	})),
+};
+---
+
+<!doctype html>
+<html lang="es">
+	<head>
+		<BaseHead title={title} description={description} />
+		<script type="application/ld+json" set:html={JSON.stringify(itemListSchema)} />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<Breadcrumb items={[
+				{ label: 'Inicio', href: '/' },
+				{ label: 'Directorio', href: '/directorio/' },
+				{ label: provincia.nombre },
+			]} />
+
+			<div class="page-layout">
+				<div class="page-main">
+					<div class="page-header">
+						<span class="tag">{provincia.total} centros</span>
+						<h1>Cejas y pestañas en {provincia.nombre}</h1>
+					</div>
+
+					{subcities.length > 0 && (
+						<section class="subcities-section">
+							<h2>Localidades</h2>
+							<div class="subcities-grid">
+								{subcities.map(([citySlug, sc]) => (
+									<a href={`/directorio/${slug}/${citySlug}/`} class="subcity-chip">
+										{sc.nombre} <span class="chip-count">{sc.negocios.length}</span>
+									</a>
+								))}
+							</div>
+						</section>
+					)}
+
+					<section class="listings-section">
+						<h2>{provincia.capital} <span class="count">({provincia.capital_negocios.length})</span></h2>
+						<div class="listings">
+							{provincia.capital_negocios.map((n: Negocio) => (
+								<a href={`/directorio/${slug}/${slugify(n.nombre)}/`} class="listing-card">
+									<div class="listing-content">
+										<div class="listing-badges">
+											<span class="cat-badge">{n.categoria}</span>
+											{n.verificado && <span class="verified-badge">✓</span>}
+										</div>
+										<h3>{n.nombre}</h3>
+										<p class="listing-addr">{n.direccion}, {n.ciudad}</p>
+										{n.telefono && <p class="listing-phone">{n.telefono}</p>}
+									</div>
+									<div class="listing-rating">
+										{n.rating && (
+											<>
+												<span class="rating-num">{n.rating}</span>
+												<span class="rating-stars">{renderEstrellas(n.rating)}</span>
+												<span class="rating-count">{n.num_resenas} reseñas</span>
+											</>
+										)}
+									</div>
+								</a>
+							))}
+						</div>
+					</section>
+				</div>
+
+				<aside class="sidebar">
+					<div class="sidebar-card">
+						<h4>Otras provincias</h4>
+						<ul>
+							{otherProvincias.map(([s, p]) => (
+								<li><a href={`/directorio/${s}/`}>{p.nombre} <span>({p.total})</span></a></li>
+							))}
+						</ul>
+					</div>
+				</aside>
+			</div>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	main {
+		max-width: 1200px;
+	}
+	.page-layout {
+		display: grid;
+		grid-template-columns: 1fr 280px;
+		gap: 3rem;
+	}
+	.page-header {
+		margin-bottom: 2rem;
+	}
+	.tag {
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: var(--accent);
+		font-weight: 600;
+	}
+	.page-header h1 {
+		font-size: 2.2rem;
+		margin: 0.4rem 0;
+	}
+
+	/* Subcities */
+	.subcities-section {
+		margin-bottom: 2.5rem;
+	}
+	.subcities-section h2 {
+		font-size: 1.2rem;
+		margin-bottom: 0.75rem;
+	}
+	.subcities-grid {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+	.subcity-chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.45rem 0.9rem;
+		border: 1px solid var(--border);
+		text-decoration: none;
+		color: var(--text-muted);
+		font-size: 0.85rem;
+		font-weight: 500;
+		transition: border-color 0.15s, color 0.15s;
+	}
+	.subcity-chip:hover {
+		border-color: var(--accent);
+		color: var(--accent);
+	}
+	.chip-count {
+		font-size: 0.72rem;
+		color: var(--text-dim);
+	}
+
+	/* Listings */
+	.listings-section h2 {
+		font-size: 1.3rem;
+		margin-bottom: 1rem;
+	}
+	.listings-section h2 .count {
+		color: var(--text-dim);
+		font-weight: 400;
+		font-size: 0.9rem;
+	}
+	.listings {
+		display: flex;
+		flex-direction: column;
+		border: 1px solid var(--border);
+	}
+	.listing-card {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 1.2rem 1.5rem;
+		text-decoration: none;
+		color: var(--text);
+		border-bottom: 1px solid var(--border);
+		gap: 1.5rem;
+		transition: background 0.1s;
+	}
+	.listing-card:last-child {
+		border-bottom: none;
+	}
+	.listing-card:hover {
+		background: var(--bg-card);
+		text-decoration: none;
+	}
+	.listing-content {
+		flex: 1;
+	}
+	.listing-badges {
+		display: flex;
+		gap: 0.5rem;
+		margin-bottom: 0.3rem;
+	}
+	.cat-badge {
+		font-size: 0.65rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--accent);
+		border: 1px solid var(--accent);
+		padding: 0.15rem 0.5rem;
+		font-weight: 600;
+	}
+	.verified-badge {
+		font-size: 0.65rem;
+		color: #2d8a4e;
+		border: 1px solid #2d8a4e;
+		padding: 0.15rem 0.4rem;
+		font-weight: 700;
+	}
+	.listing-content h3 {
+		font-size: 1.05rem;
+		margin: 0 0 0.2rem;
+	}
+	.listing-addr {
+		font-size: 0.82rem;
+		color: var(--text-dim);
+		margin: 0;
+	}
+	.listing-phone {
+		font-size: 0.82rem;
+		color: var(--text-dim);
+		margin: 0.15rem 0 0;
+	}
+	.listing-rating {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		flex-shrink: 0;
+	}
+	.rating-num {
+		font-size: 1.6rem;
+		font-weight: 700;
+		color: var(--accent);
+	}
+	.rating-stars {
+		font-size: 0.75rem;
+		color: #f5a623;
+	}
+	.rating-count {
+		font-size: 0.68rem;
+		color: var(--text-dim);
+	}
+
+	/* Sidebar */
+	.sidebar {
+		position: sticky;
+		top: 80px;
+		align-self: start;
+	}
+	.sidebar-card {
+		border: 1px solid var(--border);
+		padding: 1.2rem;
+	}
+	.sidebar-card h4 {
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--text-muted);
+		margin-bottom: 0.75rem;
+	}
+	.sidebar-card ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+	.sidebar-card li {
+		border-bottom: 1px solid var(--border);
+	}
+	.sidebar-card li:last-child {
+		border-bottom: none;
+	}
+	.sidebar-card a {
+		display: flex;
+		justify-content: space-between;
+		padding: 0.5rem 0;
+		text-decoration: none;
+		color: var(--text-muted);
+		font-size: 0.85rem;
+		transition: color 0.1s;
+	}
+	.sidebar-card a:hover {
+		color: var(--accent);
+	}
+	.sidebar-card a span {
+		color: var(--text-dim);
+	}
+
+	@media (max-width: 900px) {
+		.page-layout {
+			grid-template-columns: 1fr;
+		}
+		.sidebar {
+			position: static;
+		}
+		.listing-card {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+	}
+</style>

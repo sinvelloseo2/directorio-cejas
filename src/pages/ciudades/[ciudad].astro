@@ -1,0 +1,262 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import PriceRange from '../../components/PriceRange.astro';
+import FAQ from '../../components/FAQ.astro';
+import { ciudades, type Ciudad } from '../../data/ciudades';
+import { tratamientos } from '../../data/tratamientos';
+import { SITE_TITLE, SITE_URL } from '../../consts';
+
+export function getStaticPaths() {
+	return ciudades.map((c) => ({
+		params: { ciudad: c.slug },
+		props: { ciudad: c },
+	}));
+}
+
+interface Props {
+	ciudad: Ciudad;
+}
+
+const { ciudad } = Astro.props;
+
+const title = `Cejas y pestañas en ${ciudad.nombre} — Precios y profesionales | ${SITE_TITLE}`;
+const description = `Guía de tratamientos de cejas y pestañas en ${ciudad.nombre}. Precios actualizados de microblading, laminado, extensiones y más. ${ciudad.tratamientos.length} tratamientos disponibles.`;
+
+const faqItems = ciudad.tratamientos.slice(0, 4).map((t) => ({
+	pregunta: `¿Cuánto cuesta ${t.nombre.toLowerCase()} en ${ciudad.nombre}?`,
+	respuesta: `El precio de ${t.nombre.toLowerCase()} en ${ciudad.nombre} oscila entre ${t.precioMin}€ y ${t.precioMax}€. Hay más de ${t.profesionales} profesionales disponibles en la ciudad.`,
+}));
+---
+
+<!doctype html>
+<html lang="es">
+	<head>
+		<BaseHead title={title} description={description} />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<Breadcrumb items={[
+				{ label: 'Inicio', href: '/' },
+				{ label: 'Ciudades', href: '/ciudades/' },
+				{ label: ciudad.nombre },
+			]} />
+
+			<div class="city-hero">
+				<div class="city-hero-text">
+					<span class="city-tag">{ciudad.comunidad}</span>
+					<h1>Cejas y pestañas en {ciudad.nombre}</h1>
+					<p>{ciudad.descripcion}</p>
+				</div>
+				<div class="city-hero-stats">
+					<div class="stat">
+						<span class="stat-value">{ciudad.tratamientos.length}</span>
+						<span class="stat-label">Tratamientos</span>
+					</div>
+					<div class="stat">
+						<span class="stat-value">{ciudad.tratamientos.reduce((s, t) => s + t.profesionales, 0)}+</span>
+						<span class="stat-label">Profesionales</span>
+					</div>
+					<div class="stat">
+						<span class="stat-value">{(ciudad.poblacion / 1000).toFixed(0)}k</span>
+						<span class="stat-label">Población</span>
+					</div>
+				</div>
+			</div>
+
+			<section class="treatments-section">
+				<h2>Tratamientos y precios en {ciudad.nombre}</h2>
+				<div class="treatments-list">
+					{ciudad.tratamientos.map((t) => {
+						const full = tratamientos.find((tr) => tr.slug === t.slug);
+						return (
+							<div class="treatment-row">
+								<div class="treatment-info">
+									<a href={`/tratamientos/${t.slug}/`}>
+										<h3>{t.nombre}</h3>
+									</a>
+									{full && <p>{full.descripcionCorta}</p>}
+								</div>
+								<div class="treatment-data">
+									<PriceRange min={t.precioMin} max={t.precioMax} />
+									<span class="pros-count">{t.profesionales}+ profesionales</span>
+								</div>
+							</div>
+						);
+					})}
+				</div>
+			</section>
+
+			<section class="faq-section">
+				<h2>Preguntas frecuentes sobre {ciudad.nombre}</h2>
+				<FAQ items={faqItems} />
+			</section>
+
+			<section class="other-cities">
+				<h2>Otras ciudades</h2>
+				<div class="cities-links">
+					{ciudades.filter((c) => c.slug !== ciudad.slug).map((c) => (
+						<a href={`/ciudades/${c.slug}/`}>{c.nombre}</a>
+					))}
+				</div>
+			</section>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	main {
+		max-width: 1000px;
+	}
+	.city-hero {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-start;
+		gap: 3rem;
+		margin-bottom: 3rem;
+		padding-bottom: 2rem;
+		border-bottom: 1px solid var(--border);
+	}
+	.city-tag {
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: var(--accent);
+		font-weight: 600;
+	}
+	.city-hero-text h1 {
+		font-size: 2.6rem;
+		margin: 0.5rem 0 0.75rem;
+	}
+	.city-hero-text p {
+		color: var(--text-muted);
+		font-size: 1rem;
+		margin: 0;
+		max-width: 600px;
+	}
+	.city-hero-stats {
+		display: flex;
+		gap: 2rem;
+		flex-shrink: 0;
+	}
+	.stat {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+	.stat-value {
+		font-size: 1.6rem;
+		font-weight: 700;
+		color: var(--accent);
+	}
+	.stat-label {
+		font-size: 0.7rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--text-dim);
+	}
+	.treatments-section {
+		margin-bottom: 3rem;
+	}
+	.treatments-section h2 {
+		font-size: 1.6rem;
+		margin-bottom: 1.5rem;
+	}
+	.treatments-list {
+		border: 1px solid var(--border);
+	}
+	.treatment-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 1.2rem 1.5rem;
+		border-bottom: 1px solid var(--border);
+		gap: 1.5rem;
+	}
+	.treatment-row:last-child {
+		border-bottom: none;
+	}
+	.treatment-row:hover {
+		background: var(--bg-card);
+	}
+	.treatment-info h3 {
+		font-size: 1.05rem;
+		margin: 0 0 0.2rem;
+	}
+	.treatment-info a {
+		text-decoration: none;
+		color: var(--text);
+	}
+	.treatment-info a:hover {
+		color: var(--accent);
+	}
+	.treatment-info p {
+		font-size: 0.82rem;
+		color: var(--text-dim);
+		margin: 0;
+	}
+	.treatment-data {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		gap: 0.3rem;
+		flex-shrink: 0;
+	}
+	.pros-count {
+		font-size: 0.75rem;
+		color: var(--text-dim);
+	}
+	.faq-section {
+		margin-bottom: 3rem;
+	}
+	.faq-section h2 {
+		font-size: 1.6rem;
+		margin-bottom: 1rem;
+	}
+	.other-cities {
+		margin-bottom: 2rem;
+	}
+	.other-cities h2 {
+		font-size: 1.3rem;
+		margin-bottom: 1rem;
+	}
+	.cities-links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+	.cities-links a {
+		padding: 0.5rem 1rem;
+		border: 1px solid var(--border);
+		color: var(--text-muted);
+		text-decoration: none;
+		font-size: 0.85rem;
+		font-weight: 600;
+		transition: border-color 0.15s, color 0.15s;
+	}
+	.cities-links a:hover {
+		border-color: var(--accent);
+		color: var(--accent);
+	}
+	@media (max-width: 768px) {
+		.city-hero {
+			flex-direction: column;
+			gap: 1.5rem;
+		}
+		.city-hero-text h1 {
+			font-size: 2rem;
+		}
+		.treatment-row {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 0.75rem;
+		}
+		.treatment-data {
+			align-items: flex-start;
+		}
+	}
+</style>

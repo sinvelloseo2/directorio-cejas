@@ -1,0 +1,346 @@
+---
+import { getCollection } from 'astro:content';
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import CityCard from '../components/CityCard.astro';
+import FAQ from '../components/FAQ.astro';
+import { SITE_TITLE, SITE_DESCRIPTION, SITE_URL } from '../consts';
+import { ciudades } from '../data/ciudades';
+import { tratamientos } from '../data/tratamientos';
+import { getProvincias, getTotalNegocios, getProvinciasCount } from '../data/directorio';
+
+const totalNegocios = getTotalNegocios();
+const provinciasCount = getProvinciasCount();
+const topProvincias = getProvincias().slice(0, 6);
+
+const posts = (await getCollection('blog')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+).slice(0, 4);
+
+const websiteSchema = {
+	"@context": "https://schema.org",
+	"@type": "WebSite",
+	"name": SITE_TITLE,
+	"url": SITE_URL,
+	"description": SITE_DESCRIPTION,
+	"inLanguage": "es-ES",
+};
+
+const faqItems = [
+	{
+		pregunta: '¿Cuánto cuesta el microblading en España?',
+		respuesta: 'El microblading en España cuesta entre 180€ y 500€ dependiendo de la ciudad y el profesional. En Madrid y Barcelona los precios suelen ser más altos, mientras que en ciudades como Sevilla o Zaragoza encuentras precios desde 180€.',
+	},
+	{
+		pregunta: '¿Cuánto duran las extensiones de pestañas?',
+		respuesta: 'Las extensiones de pestañas duran entre 3 y 6 semanas dependiendo del tipo (clásicas, híbridas o volumen) y del cuidado. Se recomienda hacer retoques cada 2-3 semanas para mantener un aspecto óptimo.',
+	},
+	{
+		pregunta: '¿Es seguro el laminado de cejas?',
+		respuesta: 'Sí, el laminado de cejas es un tratamiento seguro cuando lo realiza un profesional cualificado. Dura entre 6 y 8 semanas y consiste en alisar y fijar el vello de las cejas para darles una forma más definida y uniforme.',
+	},
+	{
+		pregunta: '¿Qué diferencia hay entre lifting y extensiones de pestañas?',
+		respuesta: 'El lifting riza y eleva tus pestañas naturales sin añadir material extra, dura 6-8 semanas y requiere menos mantenimiento. Las extensiones añaden pestañas sintéticas pelo a pelo para mayor volumen y longitud, pero necesitan retoques cada 2-3 semanas.',
+	},
+];
+---
+
+<!doctype html>
+<html lang="es">
+	<head>
+		<BaseHead title={`${SITE_TITLE} — Precios de cejas y pestañas en España 2026`} description={SITE_DESCRIPTION} />
+		<script type="application/ld+json" set:html={JSON.stringify(websiteSchema)} />
+	</head>
+	<body>
+		<Header />
+		<main class="home">
+			<!-- Hero -->
+			<section class="hero">
+				<span class="hero-tag">Guía España 2026</span>
+				<h1>Precios de cejas y pestañas en tu ciudad</h1>
+				<p class="hero-sub">Compara precios, tratamientos y profesionales en {ciudades.length} ciudades españolas</p>
+				<div class="hero-cta">
+					<a href="/ciudades/" class="btn btn-primary">Ver ciudades</a>
+					<a href="/tratamientos/" class="btn btn-outline">Tratamientos</a>
+				</div>
+				<div class="hero-stats">
+					<div class="stat"><span class="stat-val">{ciudades.length}</span><span class="stat-lbl">Ciudades</span></div>
+					<div class="stat"><span class="stat-val">{tratamientos.length}</span><span class="stat-lbl">Tratamientos</span></div>
+					<div class="stat"><span class="stat-val">2026</span><span class="stat-lbl">Actualizado</span></div>
+				</div>
+			</section>
+
+			<!-- Ciudades destacadas -->
+			<section class="section">
+				<div class="section-header">
+					<h2>Ciudades</h2>
+					<a href="/ciudades/" class="section-link">Ver todas →</a>
+				</div>
+				<div class="city-grid">
+					{ciudades.slice(0, 4).map((ciudad) => (
+						<CityCard ciudad={ciudad} />
+					))}
+				</div>
+			</section>
+
+			<!-- Tratamientos -->
+			<section class="section">
+				<div class="section-header">
+					<h2>Tratamientos</h2>
+					<a href="/tratamientos/" class="section-link">Ver todos →</a>
+				</div>
+				<div class="treatments-grid">
+					{tratamientos.map((t) => (
+						<a href={`/tratamientos/${t.slug}/`} class="treat-card">
+							<h3>{t.nombre}</h3>
+							<p>{t.descripcionCorta}</p>
+							<span class="treat-price">{t.precioMedioMin}€–{t.precioMedioMax}€</span>
+						</a>
+					))}
+				</div>
+			</section>
+
+			<!-- Directorio -->
+			<section class="section">
+				<div class="section-header">
+					<h2>Directorio de profesionales</h2>
+					<a href="/directorio/" class="section-link">Ver todas →</a>
+				</div>
+				<p class="dir-intro">{totalNegocios} centros verificados en {provinciasCount} provincias</p>
+				<div class="prov-list">
+					{topProvincias.map(([slug, prov]) => (
+						<a href={`/directorio/${slug}/`} class="prov-row">
+							<span class="prov-name">{prov.nombre}</span>
+							<span class="prov-count">{prov.total}</span>
+						</a>
+					))}
+				</div>
+			</section>
+
+			<!-- FAQ -->
+			<section class="section faq-section">
+				<h2>Preguntas frecuentes</h2>
+				<FAQ items={faqItems} />
+			</section>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	.home {
+		width: 100%;
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: 0 1.5rem;
+	}
+
+	/* Hero */
+	.hero {
+		padding: 5rem 0 4rem;
+		border-bottom: 1px solid var(--border);
+		margin-bottom: 3rem;
+	}
+	.hero-tag {
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.12em;
+		color: var(--accent);
+		font-weight: 600;
+	}
+	.hero h1 {
+		font-size: 3.5rem;
+		margin: 0.5rem 0 1rem;
+		max-width: 700px;
+		line-height: 1.05;
+	}
+	.hero-sub {
+		font-size: 1.1rem;
+		color: var(--text-muted);
+		max-width: 550px;
+		margin-bottom: 2rem;
+	}
+	.hero-cta {
+		display: flex;
+		gap: 0.75rem;
+		margin-bottom: 3rem;
+	}
+	.btn {
+		padding: 0.75rem 1.8rem;
+		font-weight: 700;
+		font-size: 0.85rem;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		text-decoration: none;
+		transition: all 0.15s;
+		display: inline-block;
+	}
+	.btn-primary {
+		background: var(--accent);
+		color: var(--bg);
+	}
+	.btn-primary:hover {
+		background: #fff;
+		color: var(--bg);
+		text-decoration: none;
+	}
+	.btn-outline {
+		border: 1px solid var(--border);
+		color: var(--text-muted);
+		background: transparent;
+	}
+	.btn-outline:hover {
+		border-color: var(--accent);
+		color: var(--accent);
+		text-decoration: none;
+	}
+	.hero-stats {
+		display: flex;
+		gap: 3rem;
+	}
+	.stat {
+		display: flex;
+		flex-direction: column;
+	}
+	.stat-val {
+		font-size: 1.8rem;
+		font-weight: 700;
+		color: var(--text);
+	}
+	.stat-lbl {
+		font-size: 0.72rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--text-dim);
+	}
+
+	/* Sections */
+	.section {
+		margin-bottom: 3rem;
+	}
+	.section-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		margin-bottom: 1.5rem;
+	}
+	.section-header h2 {
+		font-size: 1.8rem;
+		margin: 0;
+	}
+	.section-link {
+		font-size: 0.85rem;
+		color: var(--text-muted);
+		text-decoration: none;
+		font-weight: 600;
+	}
+	.section-link:hover {
+		color: var(--accent);
+	}
+
+	/* City grid */
+	.city-grid {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 1px;
+		border: 1px solid var(--border);
+	}
+
+	/* Treatments grid */
+	.treatments-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1px;
+		border: 1px solid var(--border);
+	}
+	.treat-card {
+		display: flex;
+		flex-direction: column;
+		padding: 1.5rem;
+		background: var(--bg-card);
+		text-decoration: none;
+		color: var(--text);
+		transition: background 0.15s;
+	}
+	.treat-card:hover {
+		background: var(--bg-card-hover);
+		text-decoration: none;
+	}
+	.treat-card h3 {
+		font-size: 1.1rem;
+		margin: 0 0 0.4rem;
+	}
+	.treat-card p {
+		font-size: 0.85rem;
+		color: var(--text-muted);
+		margin: 0 0 auto;
+		padding-bottom: 1rem;
+	}
+	.treat-price {
+		font-size: 0.9rem;
+		font-weight: 700;
+		color: var(--accent);
+	}
+
+	/* Directory */
+	.dir-intro {
+		font-size: 0.92rem;
+		color: var(--text-muted);
+		margin: 0 0 1rem;
+	}
+	.prov-list {
+		display: flex;
+		flex-direction: column;
+		border: 1px solid var(--border);
+	}
+	.prov-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 0.9rem 1.2rem;
+		text-decoration: none;
+		color: var(--text);
+		border-bottom: 1px solid var(--border);
+		transition: background 0.1s;
+	}
+	.prov-row:last-child { border-bottom: none; }
+	.prov-row:hover { background: var(--bg-card); text-decoration: none; }
+	.prov-name { font-weight: 600; font-size: 0.95rem; }
+	.prov-row:hover .prov-name { color: var(--accent); }
+	.prov-count {
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: var(--accent);
+	}
+
+	/* FAQ */
+	.faq-section {
+		max-width: 800px;
+		padding-bottom: 2rem;
+	}
+	.faq-section h2 {
+		font-size: 1.8rem;
+		margin-bottom: 1rem;
+	}
+
+	@media (max-width: 768px) {
+		.hero h1 {
+			font-size: 2.2rem;
+		}
+		.hero-stats {
+			gap: 1.5rem;
+		}
+		.hero-cta {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+		.city-grid {
+			grid-template-columns: 1fr;
+		}
+		.treatments-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

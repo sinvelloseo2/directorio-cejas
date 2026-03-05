@@ -1,0 +1,82 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import CityCard from '../../components/CityCard.astro';
+import { ciudades } from '../../data/ciudades';
+import { SITE_TITLE, SITE_URL } from '../../consts';
+
+const title = `Ciudades — ${SITE_TITLE}`;
+const description = 'Encuentra profesionales y precios de tratamientos de cejas y pestañas en las principales ciudades de España.';
+
+const itemListSchema = {
+	"@context": "https://schema.org",
+	"@type": "ItemList",
+	"name": "Ciudades con tratamientos de cejas y pestañas en España",
+	"numberOfItems": ciudades.length,
+	"itemListElement": ciudades.map((c, i) => ({
+		"@type": "ListItem",
+		"position": i + 1,
+		"name": c.nombre,
+		"url": `${SITE_URL}/ciudades/${c.slug}/`,
+	})),
+};
+---
+
+<!doctype html>
+<html lang="es">
+	<head>
+		<BaseHead title={title} description={description} />
+		<script type="application/ld+json" set:html={JSON.stringify(itemListSchema)} />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<Breadcrumb items={[
+				{ label: 'Inicio', href: '/' },
+				{ label: 'Ciudades' },
+			]} />
+
+			<div class="page-header">
+				<h1>Ciudades</h1>
+				<p>Precios y profesionales de cejas y pestañas en {ciudades.length} ciudades españolas</p>
+			</div>
+
+			<div class="city-grid">
+				{ciudades.map((ciudad) => (
+					<CityCard ciudad={ciudad} />
+				))}
+			</div>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	main {
+		max-width: 1200px;
+	}
+	.page-header {
+		margin-bottom: 2.5rem;
+	}
+	.page-header h1 {
+		margin-bottom: 0.3rem;
+	}
+	.page-header p {
+		color: var(--text-muted);
+		font-size: 1.05rem;
+		margin: 0;
+	}
+	.city-grid {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 1px;
+		border: 1px solid var(--border);
+	}
+	@media (max-width: 768px) {
+		.city-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>
