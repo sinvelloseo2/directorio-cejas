@@ -1,0 +1,646 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import FAQ from '../../components/FAQ.astro';
+import { tratamientos } from '../../data/tratamientos';
+import { ciudades } from '../../data/ciudades';
+import { getTotalNegocios } from '../../data/directorio';
+import { SITE_TITLE, SITE_URL } from '../../consts';
+
+const title = `Servicios de cejas y pestañas en España — ${SITE_TITLE}`;
+const description = 'Todos los servicios de cejas y pestañas disponibles en España: microblading, micropigmentación, laminado, extensiones, lifting y tinte. Compara precios y encuentra tu profesional.';
+
+const totalNegocios = getTotalNegocios();
+
+const serviceSchema = {
+	"@context": "https://schema.org",
+	"@type": "ItemList",
+	"name": "Servicios de cejas y pestañas en España",
+	"description": description,
+	"numberOfItems": tratamientos.length,
+	"itemListElement": tratamientos.map((t, i) => ({
+		"@type": "ListItem",
+		"position": i + 1,
+		"item": {
+			"@type": "Service",
+			"name": t.nombre,
+			"description": t.descripcion,
+			"url": `${SITE_URL}/tratamientos/${t.slug}/`,
+			"offers": {
+				"@type": "AggregateOffer",
+				"lowPrice": t.precioMedioMin,
+				"highPrice": t.precioMedioMax,
+				"priceCurrency": "EUR",
+			},
+		},
+	})),
+};
+
+const faqItems = [
+	{
+		pregunta: '¿Cuál es el tratamiento de cejas más duradero?',
+		respuesta: 'La micropigmentación de cejas es el tratamiento más duradero, con una duración de 1 a 3 años. Le sigue el microblading con 12-18 meses. El laminado y el tinte son opciones temporales que duran entre 3 y 8 semanas.',
+	},
+	{
+		pregunta: '¿Qué tratamiento de cejas es mejor para pieles grasas?',
+		respuesta: 'Para pieles grasas se recomienda la micropigmentación con técnica powder brows. El microblading no es ideal en pieles grasas porque los trazos tienden a difuminarse. El laminado y el tinte funcionan bien en todo tipo de pieles.',
+	},
+	{
+		pregunta: '¿Cuál es el tratamiento de pestañas con menos mantenimiento?',
+		respuesta: 'El lifting de pestañas es el que menos mantenimiento requiere: dura 6-8 semanas sin necesidad de retoques ni visitas intermedias. Las extensiones de pestañas requieren retoques cada 2-3 semanas.',
+	},
+	{
+		pregunta: '¿Se pueden combinar varios tratamientos?',
+		respuesta: 'Sí, las combinaciones más populares son: laminado + tinte de cejas (efecto completo en cejas), lifting + tinte de pestañas (efecto rimel permanente) y microblading/micropigmentación + laminado (definición máxima).',
+	},
+	{
+		pregunta: '¿Cómo elijo el mejor profesional para mi tratamiento?',
+		respuesta: 'Busca profesionales con certificaciones específicas, consulta reseñas y fotos de trabajos anteriores, pregunta por los productos y marcas que utiliza, y desconfía de precios excesivamente bajos. Usa nuestro directorio para encontrar centros verificados.',
+	},
+];
+
+// Categorize treatments
+const cejasTratamientos = tratamientos.filter(t =>
+	['microblading', 'laminado-cejas', 'micropigmentacion', 'tinte-cejas'].includes(t.slug)
+);
+const pestanasTratamientos = tratamientos.filter(t =>
+	['extensiones-pestanas', 'lifting-pestanas'].includes(t.slug)
+);
+---
+
+<!doctype html>
+<html lang="es">
+	<head>
+		<BaseHead title={title} description={description} />
+		<script type="application/ld+json" set:html={JSON.stringify(serviceSchema)} />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<Breadcrumb items={[
+				{ label: 'Inicio', href: '/' },
+				{ label: 'Servicios' },
+			]} />
+
+			<!-- Hero -->
+			<section class="hero">
+				<span class="hero-tag">Guía de servicios 2026</span>
+				<h1>Servicios de cejas y pestañas en España</h1>
+				<p class="hero-sub">
+					Compara los {tratamientos.length} tratamientos más demandados, con precios actualizados
+					y acceso a {totalNegocios}+ profesionales verificados en {ciudades.length} ciudades.
+				</p>
+				<div class="hero-stats">
+					<div class="stat">
+						<span class="stat-val">{tratamientos.length}</span>
+						<span class="stat-lbl">Servicios</span>
+					</div>
+					<div class="stat">
+						<span class="stat-val">{ciudades.length}</span>
+						<span class="stat-lbl">Ciudades</span>
+					</div>
+					<div class="stat">
+						<span class="stat-val">{totalNegocios}+</span>
+						<span class="stat-lbl">Profesionales</span>
+					</div>
+				</div>
+			</section>
+
+			<!-- Quick navigation -->
+			<section class="section">
+				<div class="quick-nav">
+					<a href="#cejas" class="quick-btn">Servicios de cejas</a>
+					<a href="#pestanas" class="quick-btn">Servicios de pestañas</a>
+					<a href="#comparativa" class="quick-btn">Comparativa de precios</a>
+					<a href="#como-elegir" class="quick-btn">Cómo elegir</a>
+				</div>
+			</section>
+
+			<!-- Cejas -->
+			<section class="section" id="cejas">
+				<h2>Servicios de cejas</h2>
+				<p class="section-intro">Tratamientos profesionales para conseguir cejas perfectas: desde opciones temporales como el tinte hasta técnicas semipermanentes como el microblading y la micropigmentación.</p>
+
+				<div class="services-grid">
+					{cejasTratamientos.map((t) => (
+						<div class="service-card">
+							<div class="service-header">
+								<h3>{t.nombre}</h3>
+								<span class="service-price">{t.precioMedioMin}€–{t.precioMedioMax}€</span>
+							</div>
+							<p class="service-desc">{t.descripcion}</p>
+							<div class="service-meta">
+								<div class="meta-item">
+									<span class="meta-label">Duración</span>
+									<span class="meta-value">{t.duracion}</span>
+								</div>
+								<div class="meta-item">
+									<span class="meta-label">Sesión</span>
+									<span class="meta-value">{t.tiempoSesion}</span>
+								</div>
+								<div class="meta-item">
+									<span class="meta-label">Dolor</span>
+									<span class="meta-value">{t.nivelDolor}</span>
+								</div>
+							</div>
+							<div class="service-actions">
+								<a href={`/tratamientos/${t.slug}/`} class="btn btn-outline">Ver precios por ciudad</a>
+								<a href="/directorio/" class="btn btn-link">Buscar profesional →</a>
+							</div>
+						</div>
+					))}
+				</div>
+			</section>
+
+			<!-- Pestañas -->
+			<section class="section" id="pestanas">
+				<h2>Servicios de pestañas</h2>
+				<p class="section-intro">Tratamientos para pestañas más largas, curvadas y voluminosas: extensiones pelo a pelo o lifting de pestañas naturales.</p>
+
+				<div class="services-grid">
+					{pestanasTratamientos.map((t) => (
+						<div class="service-card">
+							<div class="service-header">
+								<h3>{t.nombre}</h3>
+								<span class="service-price">{t.precioMedioMin}€–{t.precioMedioMax}€</span>
+							</div>
+							<p class="service-desc">{t.descripcion}</p>
+							<div class="service-meta">
+								<div class="meta-item">
+									<span class="meta-label">Duración</span>
+									<span class="meta-value">{t.duracion}</span>
+								</div>
+								<div class="meta-item">
+									<span class="meta-label">Sesión</span>
+									<span class="meta-value">{t.tiempoSesion}</span>
+								</div>
+								<div class="meta-item">
+									<span class="meta-label">Dolor</span>
+									<span class="meta-value">{t.nivelDolor}</span>
+								</div>
+							</div>
+							<div class="service-actions">
+								<a href={`/tratamientos/${t.slug}/`} class="btn btn-outline">Ver precios por ciudad</a>
+								<a href="/directorio/" class="btn btn-link">Buscar profesional →</a>
+							</div>
+						</div>
+					))}
+				</div>
+			</section>
+
+			<!-- Comparativa de precios -->
+			<section class="section" id="comparativa">
+				<h2>Comparativa de precios</h2>
+				<p class="section-intro">Precios medios de todos los tratamientos en España. Los precios varían según la ciudad, la experiencia del profesional y los productos utilizados.</p>
+
+				<div class="comparison-table-wrapper">
+					<table class="comparison-table">
+						<thead>
+							<tr>
+								<th>Tratamiento</th>
+								<th>Precio medio</th>
+								<th>Duración</th>
+								<th>Sesión</th>
+								<th>Dolor</th>
+							</tr>
+						</thead>
+						<tbody>
+							{tratamientos.map((t) => (
+								<tr>
+									<td>
+										<a href={`/tratamientos/${t.slug}/`}>{t.nombre}</a>
+									</td>
+									<td class="price-cell">{t.precioMedioMin}€–{t.precioMedioMax}€</td>
+									<td>{t.duracion}</td>
+									<td>{t.tiempoSesion}</td>
+									<td>{t.nivelDolor}</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+			</section>
+
+			<!-- Cómo elegir -->
+			<section class="section" id="como-elegir">
+				<h2>Cómo elegir tu tratamiento</h2>
+
+				<div class="choose-grid">
+					<div class="choose-card">
+						<h3>Quiero cejas naturales pelo a pelo</h3>
+						<p>El <strong>microblading</strong> es tu mejor opción. Trazos ultrafinos que imitan el vello natural. Ideal para rellenar zonas despobladas.</p>
+						<a href="/tratamientos/microblading/" class="choose-link">Ver microblading →</a>
+					</div>
+					<div class="choose-card">
+						<h3>Quiero cejas con efecto maquillaje</h3>
+						<p>La <strong>micropigmentación</strong> con técnica powder brows crea un efecto sombreado elegante que dura hasta 3 años.</p>
+						<a href="/tratamientos/micropigmentacion/" class="choose-link">Ver micropigmentación →</a>
+					</div>
+					<div class="choose-card">
+						<h3>Quiero probar algo temporal</h3>
+						<p>El <strong>laminado de cejas</strong> (6-8 semanas) o el <strong>tinte</strong> (3-4 semanas) son opciones perfectas sin compromiso.</p>
+						<a href="/tratamientos/laminado-cejas/" class="choose-link">Ver laminado →</a>
+					</div>
+					<div class="choose-card">
+						<h3>Quiero pestañas más largas</h3>
+						<p>Las <strong>extensiones de pestañas</strong> añaden longitud y volumen espectacular. Disponibles en clásicas, híbridas y volumen.</p>
+						<a href="/tratamientos/extensiones-pestanas/" class="choose-link">Ver extensiones →</a>
+					</div>
+					<div class="choose-card">
+						<h3>Quiero pestañas curvadas sin añadidos</h3>
+						<p>El <strong>lifting de pestañas</strong> curva tus pestañas naturales desde la raíz. Cero mantenimiento durante 6-8 semanas.</p>
+						<a href="/tratamientos/lifting-pestanas/" class="choose-link">Ver lifting →</a>
+					</div>
+					<div class="choose-card">
+						<h3>Tengo la piel grasa</h3>
+						<p>Evita el microblading y opta por <strong>micropigmentación powder brows</strong>. Para pestañas, tanto extensiones como lifting funcionan bien.</p>
+						<a href="/tratamientos/micropigmentacion/" class="choose-link">Ver micropigmentación →</a>
+					</div>
+				</div>
+			</section>
+
+			<!-- CTA -->
+			<section class="section cta-section">
+				<div class="cta-box">
+					<h2>Encuentra tu profesional</h2>
+					<p>Busca entre {totalNegocios}+ centros verificados en toda España. Consulta reseñas, precios y disponibilidad.</p>
+					<div class="cta-buttons">
+						<a href="/directorio/" class="btn btn-primary">Ver directorio</a>
+						<a href="/ciudades/" class="btn btn-outline">Buscar por ciudad</a>
+					</div>
+				</div>
+			</section>
+
+			<!-- Blog -->
+			<section class="section">
+				<h2>Guías relacionadas</h2>
+				<div class="guides-grid">
+					<a href="/blog/microblading-guia-completa/" class="guide-link">Guía completa de microblading →</a>
+					<a href="/blog/micropigmentacion-cejas-guia-completa/" class="guide-link">Guía de micropigmentación →</a>
+					<a href="/blog/laminado-cejas-guia-completa/" class="guide-link">Guía de laminado de cejas →</a>
+					<a href="/blog/extensiones-pestanas-guia-completa/" class="guide-link">Guía de extensiones de pestañas →</a>
+					<a href="/blog/lifting-pestanas-guia-completa/" class="guide-link">Guía de lifting de pestañas →</a>
+					<a href="/blog/tinte-cejas-guia-completa/" class="guide-link">Guía de tinte de cejas →</a>
+					<a href="/blog/microblading-vs-micropigmentacion/" class="guide-link">Microblading vs micropigmentación →</a>
+					<a href="/blog/cuidados-cejas-pestanas-en-casa/" class="guide-link">Cuidados en casa →</a>
+				</div>
+			</section>
+
+			<!-- FAQ -->
+			<section class="section faq-section">
+				<h2>Preguntas frecuentes sobre servicios</h2>
+				<FAQ items={faqItems} />
+			</section>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	main {
+		max-width: 1100px;
+		margin: 0 auto;
+		padding: 0 1.5rem;
+	}
+
+	/* Hero */
+	.hero {
+		padding: 4rem 0 3rem;
+		border-bottom: 1px solid var(--border);
+		margin-bottom: 3rem;
+	}
+	.hero-tag {
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.12em;
+		color: var(--accent);
+		font-weight: 600;
+	}
+	.hero h1 {
+		font-size: 2.8rem;
+		margin: 0.5rem 0 1rem;
+		max-width: 700px;
+		line-height: 1.08;
+	}
+	.hero-sub {
+		font-size: 1.05rem;
+		color: var(--text-muted);
+		max-width: 600px;
+		line-height: 1.6;
+	}
+	.hero-stats {
+		display: flex;
+		gap: 3rem;
+		margin-top: 2rem;
+	}
+	.stat {
+		display: flex;
+		flex-direction: column;
+	}
+	.stat-val {
+		font-size: 1.6rem;
+		font-weight: 700;
+		color: var(--text);
+	}
+	.stat-lbl {
+		font-size: 0.72rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--text-dim);
+	}
+
+	/* Quick nav */
+	.quick-nav {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+	.quick-btn {
+		padding: 0.5rem 1.2rem;
+		border: 1px solid var(--border);
+		color: var(--text-muted);
+		text-decoration: none;
+		font-size: 0.85rem;
+		font-weight: 500;
+		transition: all 0.15s;
+	}
+	.quick-btn:hover {
+		border-color: var(--accent);
+		color: var(--accent);
+		text-decoration: none;
+	}
+
+	/* Sections */
+	.section {
+		margin-bottom: 3.5rem;
+	}
+	.section h2 {
+		font-size: 1.8rem;
+		margin-bottom: 0.5rem;
+	}
+	.section-intro {
+		color: var(--text-muted);
+		font-size: 0.95rem;
+		margin-bottom: 1.5rem;
+		max-width: 700px;
+	}
+
+	/* Services grid */
+	.services-grid {
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
+		border: 1px solid var(--border);
+	}
+	.service-card {
+		padding: 2rem;
+		background: var(--bg-card);
+	}
+	.service-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		margin-bottom: 0.8rem;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+	.service-header h3 {
+		font-size: 1.3rem;
+		margin: 0;
+	}
+	.service-price {
+		font-size: 1.1rem;
+		font-weight: 700;
+		color: var(--accent);
+	}
+	.service-desc {
+		color: var(--text-muted);
+		font-size: 0.9rem;
+		line-height: 1.6;
+		margin-bottom: 1.2rem;
+	}
+	.service-meta {
+		display: flex;
+		gap: 2rem;
+		margin-bottom: 1.2rem;
+		flex-wrap: wrap;
+	}
+	.meta-item {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+	}
+	.meta-label {
+		font-size: 0.7rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--text-dim);
+	}
+	.meta-value {
+		font-size: 0.88rem;
+		color: var(--text);
+		font-weight: 500;
+	}
+	.service-actions {
+		display: flex;
+		gap: 1rem;
+		align-items: center;
+		flex-wrap: wrap;
+	}
+
+	/* Buttons */
+	.btn {
+		padding: 0.6rem 1.4rem;
+		font-weight: 600;
+		font-size: 0.82rem;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		text-decoration: none;
+		transition: all 0.15s;
+		display: inline-block;
+	}
+	.btn-primary {
+		background: var(--accent);
+		color: var(--bg);
+	}
+	.btn-primary:hover {
+		background: #fff;
+		color: var(--bg);
+		text-decoration: none;
+	}
+	.btn-outline {
+		border: 1px solid var(--border);
+		color: var(--text-muted);
+		background: transparent;
+	}
+	.btn-outline:hover {
+		border-color: var(--accent);
+		color: var(--accent);
+		text-decoration: none;
+	}
+	.btn-link {
+		color: var(--text-muted);
+		font-size: 0.82rem;
+		padding: 0.6rem 0;
+	}
+	.btn-link:hover {
+		color: var(--accent);
+		text-decoration: none;
+	}
+
+	/* Comparison table */
+	.comparison-table-wrapper {
+		overflow-x: auto;
+		border: 1px solid var(--border);
+	}
+	.comparison-table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 0.9rem;
+	}
+	.comparison-table th {
+		text-align: left;
+		padding: 0.9rem 1rem;
+		font-size: 0.72rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--text-dim);
+		border-bottom: 1px solid var(--border);
+		white-space: nowrap;
+	}
+	.comparison-table td {
+		padding: 0.9rem 1rem;
+		border-bottom: 1px solid var(--border);
+		color: var(--text-muted);
+	}
+	.comparison-table tr:last-child td {
+		border-bottom: none;
+	}
+	.comparison-table tr:hover {
+		background: var(--bg-card);
+	}
+	.comparison-table a {
+		color: var(--text);
+		text-decoration: none;
+		font-weight: 600;
+	}
+	.comparison-table a:hover {
+		color: var(--accent);
+	}
+	.price-cell {
+		color: var(--accent) !important;
+		font-weight: 700;
+		white-space: nowrap;
+	}
+
+	/* Choose grid */
+	.choose-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1px;
+		border: 1px solid var(--border);
+	}
+	.choose-card {
+		padding: 1.5rem;
+		background: var(--bg-card);
+	}
+	.choose-card h3 {
+		font-size: 1rem;
+		margin: 0 0 0.6rem;
+		color: var(--text);
+	}
+	.choose-card p {
+		font-size: 0.85rem;
+		color: var(--text-muted);
+		margin: 0 0 0.8rem;
+		line-height: 1.5;
+	}
+	.choose-card strong {
+		color: var(--text);
+	}
+	.choose-link {
+		font-size: 0.82rem;
+		color: var(--accent);
+		text-decoration: none;
+		font-weight: 600;
+	}
+	.choose-link:hover {
+		text-decoration: underline;
+	}
+
+	/* CTA */
+	.cta-section {
+		margin-top: 1rem;
+	}
+	.cta-box {
+		border: 1px solid var(--border);
+		padding: 3rem;
+		text-align: center;
+		background: var(--bg-card);
+	}
+	.cta-box h2 {
+		margin: 0 0 0.5rem;
+	}
+	.cta-box p {
+		color: var(--text-muted);
+		font-size: 0.95rem;
+		margin: 0 0 1.5rem;
+	}
+	.cta-buttons {
+		display: flex;
+		justify-content: center;
+		gap: 0.75rem;
+		flex-wrap: wrap;
+	}
+
+	/* Guides grid */
+	.guides-grid {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 1px;
+		border: 1px solid var(--border);
+	}
+	.guide-link {
+		display: block;
+		padding: 1rem 1.2rem;
+		background: var(--bg-card);
+		color: var(--text-muted);
+		text-decoration: none;
+		font-size: 0.9rem;
+		font-weight: 500;
+		transition: all 0.15s;
+	}
+	.guide-link:hover {
+		background: var(--bg-card-hover);
+		color: var(--accent);
+		text-decoration: none;
+	}
+
+	/* FAQ */
+	.faq-section {
+		max-width: 800px;
+	}
+
+	@media (max-width: 768px) {
+		.hero h1 {
+			font-size: 2rem;
+		}
+		.hero-stats {
+			gap: 1.5rem;
+		}
+		.choose-grid {
+			grid-template-columns: 1fr;
+		}
+		.guides-grid {
+			grid-template-columns: 1fr;
+		}
+		.service-meta {
+			gap: 1rem;
+		}
+		.cta-box {
+			padding: 2rem 1.5rem;
+		}
+	}
+</style>
